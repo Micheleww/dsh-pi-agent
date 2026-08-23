@@ -74,3 +74,14 @@ export function apply(ctx: Context, config: Config): void {
     throw error
   }
 }
+
+// Re-export the subagent provider entry under a distinct subpath:
+// a profile mounts it as `dsh-pi-agent/subagent` so the loop plugin and the
+// delegation provider stay independently toggleable rows.
+export {
+  name as subagentName,
+  inject as subagentInject,
+  Config as SubagentConfig,
+  apply as subagentApply,
+} from './subagent.ts'
+export type { Config as SubagentPluginConfig } from './subagent.ts'
