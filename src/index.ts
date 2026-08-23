@@ -18,9 +18,9 @@
  *     - id: pi-agent
  *       name: 'dsh-pi-agent'
  *       config:
- *         piPath: 'pi'
- *         cwd: '/path/to/project'
- *         model: 'anthropic/claude-sonnet-4-5'
+ *         piPath: 'pi'                      # or an absolute path
+ *         cwd: '/path/to/your/project'
+ *         model: 'provider/model'           # e.g. anthropic/claude-sonnet-4-5
  * # Fall back to DSH's own loop: disable this entry and re-enable agent-loop.
  * # - id: pi-agent
  * #   disabled: true

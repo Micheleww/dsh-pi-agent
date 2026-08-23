@@ -1,6 +1,6 @@
 {
   "name": "dsh-pi-agent",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Run the Pi coding agent loop inside DeepSeek Harness (DSH): a DSH Agent implementation that drives a headless `pi --mode rpc` process, so DSH's frontend works unchanged.",
   "type": "module",
   "main": "dist/index.js",
