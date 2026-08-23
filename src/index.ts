@@ -32,6 +32,14 @@ import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { PiAgentFactory } from './factory.ts'
 
+export { buildPiSessionFile } from './history.ts'
+export type {
+  BuildPiSessionFileOptions,
+  PiMessage,
+  PiMessageEntry,
+  PiSessionHeader,
+} from './history.ts'
+
 export const name = 'pi-agent'
 
 export const inject = ['sessions', 'agents']

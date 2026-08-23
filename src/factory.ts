@@ -26,6 +26,9 @@ import {
 } from '@deepseek-ai/dsh-agent'
 import { createScope, scopeOf, type ScopeKey } from '@deepseek-ai/dsh-scope'
 import type { Session, SessionId } from '@deepseek-ai/dsh-session'
+import { join } from 'node:path'
+import { homedir } from 'node:os'
+import { buildPiSessionFile } from './history.ts'
 import { PiAgent } from './pi-agent.ts'
 import { PiRpcClient } from './rpc-client.ts'
 
@@ -120,10 +123,20 @@ export class PiAgentFactory implements AgentFactory {
     const modelId = model.split('/').slice(1).join('/')
 
     const scope = createScope(this.registryCtx, id as unknown as ScopeKey)
+    // Rebuild the Pi session from DSH's durable log: the child inherits the
+    // complete conversation (DSH-native turns and earlier Pi turns alike), so
+    // a session handed off mid-stream continues with full context.
+    const sessionFile = buildPiSessionFile({
+      session,
+      cwd,
+      filePath: join(homedir(), '.dsh', 'pi-sessions', `${String(id).replace(/[^\w-]/g, '_')}.jsonl`),
+      logger: this.options.logger,
+    })
     const rpc = new PiRpcClient({
       cwd,
       model: model === '' ? undefined : model,
       piPath: this.options.piPath,
+      sessionFile,
       logger: this.options.logger,
     })
     const agent = new PiAgent({

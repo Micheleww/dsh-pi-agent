@@ -42,6 +42,13 @@ export interface PiRpcClientOptions {
   cwd: string
   /** Initial model route (`provider/model`), e.g. `anthropic/claude-sonnet-4-5`. */
   model?: string
+  /**
+   * Pi session file (v3 JSONL) to load at startup. When provided, the child
+   * resumes that conversation — full history in its context window — instead
+   * of starting ephemeral (`--no-session`). Used by the mid-session handoff
+   * bridge (see history.ts).
+   */
+  sessionFile?: string
   /** Abort signal that kills the child process. */
   signal?: AbortSignal
   /** Log sink for protocol diagnostics. */
@@ -62,7 +69,11 @@ export class PiRpcClient {
     this.cwd = resolve(options.cwd)
     this.logger = options.logger
     const piPath = options.piPath ?? 'pi'
-    const args = ['--mode', 'rpc', '--no-session']
+    // A session file carries the pre-handoff history; without one the child
+    // runs ephemeral (current default behavior).
+    const args = options.sessionFile !== undefined
+      ? ['--mode', 'rpc', '--session', options.sessionFile]
+      : ['--mode', 'rpc', '--no-session']
     this.proc = spawn(piPath, args, {
       cwd: this.cwd,
       env: process.env,

@@ -12,12 +12,14 @@
 ```
 DSH 前端（会话、hooks、preset、SQLite 持久化、Web UI）
         │
-dsh-pi-agent（本插件：AgentFactory + 事件翻译）
+dsh-pi-agent（本插件：AgentFactory + 事件翻译 + 历史衔接）
         │  spawn 子进程 + stdio 上的 JSONL 协议
         │  命令：set_model / prompt / steer / abort
         ▼
-pi --mode rpc --no-session（原汁原味的 Pi agent loop）
+pi --mode rpc --session <重建的历史>（原汁原味的 Pi agent loop）
 ```
+
+每次 create/resume 时，插件都会从 DSH 的持久化事件日志重建 Pi 会话文件并用 `--session` 启动子进程——新子进程的上下文窗口里已经装着完整对话，包括切换前在 DSH 原生 loop 下跑的轮次（见[中途衔接](#中途衔接)）。
 
 ## 为什么
 
@@ -34,9 +36,26 @@ Pi 是一个极简 harness：~300 token 的系统提示词、四个工具（`rea
 | 系统提示词 / 工具 / 上下文 | **原封不动**——与在同一目录运行 `pi` 完全一致（`AGENTS.md` 等上下文文件由 Pi 自行加载） |
 | 模型路由 | 每会话 `set_model`；被委派的 subagent 请求的模型优先于工厂默认值 |
 | 转向（steering） | DSH 的 `send(..., 'next-turn' \| 'next-step')` 映射为 Pi 的 `steer`——可在运行中途插入指令 |
-| 会话持久化 | Pi 以 `--no-session` 运行；持久化来自 DSH 的会话事件（`turn/*`、`step/*`、`tool/call`…） |
+| 会话持久化 | DSH 的会话事件始终是持久化的唯一事实源；每次 create/resume 都从它重建 Pi 会话文件，子进程启动即带完整历史 |
 | 审批 / 权限 | 适用 Pi 的本地信任模型——Pi 的工具调用不经过 DSH 的审批链 |
 | 回退 | 禁用本插件条目，DSH 自己的 `dsh-agent-loop` 立即恢复生效 |
+
+## 中途衔接
+
+会话不一定要“出生在 Pi 下”才能被 Pi 驱动。如果某个会话已经在 DSH 原生 loop 下跑了几轮（或在一个更早的 Pi 子进程下跑过），通过本插件恢复它就能无缝续接：DSH 的事件日志（`user/message`、`assistant/message`、`tool/call`、`tool/result`）会被转换成 Pi 会话文件，新子进程用 `--session` 加载它——完整历史（包括切换前 DSH 原生轮的对话）直接进入上下文窗口。
+
+- DSH 始终是唯一事实源；Pi 文件只是重建的快照，每次 create/resume 重新生成（无漂移、无重复）。
+- DSH 消息块原生映射：`text` → `text`、`reasoning` → `thinking`、`tool-call` → `toolCall`（arguments 重新解析）、`tool/result` → `toolResult`（工具名从调用日志恢复）。
+- 图片块当前跳过（attachment 引用需要运行时附件服务）；文本历史足以承载上下文。
+- 会话文件落在 `~/.dsh/pi-sessions/<session-id>.jsonl`，便于审计。
+
+```
+DSH 标准模式：  第 1 轮 ── 第 2 轮 ── 第 3 轮        （原生 loop）
+                                    │
+        通过本插件 resume ─────────┘  从 DSH 日志重建 Pi 会话
+                                    ▼
+Pi 模式：         [历史已加载] ── 第 4 轮 ── …  （Pi loop，完整上下文）
+```
 
 ## Subagent 也走 Pi
 

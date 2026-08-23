@@ -12,12 +12,14 @@ Run the [Pi coding agent](https://github.com/earendil-works/pi) ([`@earendil-wor
 ```
 DSH frontend (sessions, hooks, presets, SQLite persistence, web UI)
         │
-dsh-pi-agent  (this plugin: AgentFactory + event translation)
+dsh-pi-agent  (this plugin: AgentFactory + event translation + history handoff)
         │  spawn + JSONL over stdio
         │  commands: set_model / prompt / steer / abort
         ▼
-pi --mode rpc --no-session   (the Pi agent loop, untouched)
+pi --mode rpc --session <rebuilt-history>   (the Pi agent loop, untouched)
 ```
+
+On every create/resume the plugin rebuilds a Pi session file from DSH's durable event log and launches the child with `--session`, so the child's context window already holds the full conversation — including turns that ran under DSH's own loop before the switch (see [Mid-session handoff](#mid-session-handoff)).
 
 ## Why
 
@@ -34,9 +36,26 @@ It also makes a clean A/B experiment: same frontend, same session format, switch
 | System prompt / tools / context | **Untouched** — identical to running `pi` in the same directory (context files like `AGENTS.md` are loaded by Pi itself) |
 | Model routing | `set_model` per session; a delegated subagent's requested model wins over the factory default |
 | Steering | DSH `send(..., 'next-turn' \| 'next-step')` maps to Pi's `steer` — inject instructions mid-run |
-| Session persistence | Pi runs with `--no-session`; durability comes from DSH's session events (`turn/*`, `step/*`, `tool/call`, ...) |
+| Session persistence | DSH's session events remain the durable source of truth; a Pi session file is rebuilt from them on every create/resume so the child starts with full history |
 | Approval / permissions | Pi's local-trust model applies — Pi tool calls do not pass through DSH's approval chain |
 | Fallback | Disable this plugin's entry and DSH's own `dsh-agent-loop` becomes active again immediately |
+
+## Mid-session handoff
+
+A session does not have to be born under Pi to be driven by it. If a session already ran turns under DSH's own loop (or under an earlier Pi child), resuming it through this plugin picks the conversation up where it left off: DSH's event log (`user/message`, `assistant/message`, `tool/call`, `tool/result`) is converted into a Pi session file and the new child loads it with `--session`, so the full history — earlier DSH-native turns included — lands in its context window.
+
+- DSH remains the single source of truth; the Pi file is a rebuilt snapshot, regenerated on every create/resume (no drift, no duplication).
+- DSH message blocks map natively: `text` → `text`, `reasoning` → `thinking`, `tool-call` → `toolCall` (arguments re-parsed), `tool/result` → `toolResult` (tool name recovered from the call log).
+- Image blocks are currently skipped (attachment refs need the live attachment service); text history carries the context.
+- Session files land under `~/.dsh/pi-sessions/<session-id>.jsonl` for audit.
+
+```
+DSH standard mode:   turn 1 ── turn 2 ── turn 3        (native loop)
+                                        │
+            resume via this plugin ─────┘  rebuild Pi session from DSH log
+                                        ▼
+pi mode:              [history loaded] ── turn 4 ── …  (Pi loop, full context)
+```
 
 ## Subagents on Pi
 
