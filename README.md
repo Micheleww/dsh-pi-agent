@@ -38,6 +38,32 @@ It also makes a clean A/B experiment: same frontend, same session format, switch
 | Approval / permissions | Pi's local-trust model applies — Pi tool calls do not pass through DSH's approval chain |
 | Fallback | Disable this plugin's entry and DSH's own `dsh-agent-loop` becomes active again immediately |
 
+## Subagents on Pi
+
+Separate config from the main loop: the provider plugin is its own profile row, and the two engines are independently switchable — `pi` main loop with native subagents, native main loop with `pi` subagents, or both on `pi`.
+
+```yaml
+# Subagent delegation on the Pi engine (independent of the main loop row):
+- insert:
+    - id: subagent-pi
+      name: 'dsh-pi-agent/subagent'
+      config:
+        providerName: pi
+        piPath: 'pi'                  # defaults to PATH lookup
+        model: 'provider/model'      # omit for pi's configured default
+        timeoutMs: 600000
+
+    - id: tool-subagent
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: pi                  # 'spawn'/'fork' for DSH-native children
+        toolName: subagent
+        backgroundMode: one-shot
+        maxDepth: 'provider-managed'
+```
+
+Each delegation spawns a fresh `pi -p <task>` in the parent session's working directory: bare Pi system prompt, its own tools, its own `AGENTS.md` discovery. Nothing from the parent conversation, persona, or tool surface crosses the process boundary — `inheritsParentContext: false`, zero prompt collision.
+
 ## Requirements
 
 - Node.js ≥ 20

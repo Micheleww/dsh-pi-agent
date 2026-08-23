@@ -38,6 +38,32 @@ Pi 是一个极简 harness：~300 token 的系统提示词、四个工具（`rea
 | 审批 / 权限 | 适用 Pi 的本地信任模型——Pi 的工具调用不经过 DSH 的审批链 |
 | 回退 | 禁用本插件条目，DSH 自己的 `dsh-agent-loop` 立即恢复生效 |
 
+## Subagent 也走 Pi
+
+与主 loop 分离配置：provider 插件是独立的 profile 行，两个引擎可独立开关——主 loop 用 pi + sub 用原生、主 loop 用原生 + sub 用 pi、或两者都用 pi，任意组合。
+
+```yaml
+# Subagent 委派走 Pi 引擎（与主 loop 行互不影响）：
+- insert:
+    - id: subagent-pi
+      name: 'dsh-pi-agent/subagent'
+      config:
+        providerName: pi
+        piPath: 'pi'                  # 默认从 PATH 查找
+        model: 'provider/model'      # 省略则用 pi 自己配置的默认模型
+        timeoutMs: 600000
+
+    - id: tool-subagent
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: pi                  # 换回 'spawn'/'fork' 即 DSH 原生子代理
+        toolName: subagent
+        backgroundMode: one-shot
+        maxDepth: 'provider-managed'
+```
+
+每次委派在父会话的工作目录里 spawn 一个全新的 `pi -p <任务>`：纯 Pi 系统提示词、自己的工具、自己发现 `AGENTS.md`。父会话的对话、人格、工具面一概不出进程边界——`inheritsParentContext: false`，零提示词碰撞。
+
 ## 依赖
 
 - Node.js ≥ 20
