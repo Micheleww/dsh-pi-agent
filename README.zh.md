@@ -1,9 +1,16 @@
 # dsh-pi-agent
 
-在 [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness) 中运行 [Pi coding agent](https://github.com/earendil-works/pi) 的 agent loop：一个 DSH `Agent` 插件，驱动无头模式的 `pi --mode rpc` 子进程，DSH 前端（会话日志、hooks、preset、UI）无需任何改动即可使用。
+把 [Pi coding agent](https://github.com/earendil-works/pi)（npm 包 [`@earendil-works/pi-coding-agent`](https://www.npmjs.com/package/@earendil-works/pi-coding-agent)）作为 agent loop 跑在 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（npm 包 [`@deepseek-ai/dsh`](https://www.npmjs.com/package/@deepseek-ai/dsh)）里：一个 DSH `Agent` 插件，驱动无头模式的 `pi --mode rpc` 子进程，DSH 前端（会话日志、hooks、preset、Web UI）无需任何改动即可使用。
+
+> **在找以下任何一个？**
+> - *“怎么在 DeepSeek Harness / DSH 里用 pi？”* —— 来对地方了。
+> - *“把 DSH 的 agent-loop 换成 pi coding agent 的 loop？”* —— 本插件用 `pi --mode rpc` 子进程替换工厂。
+> - *“给 pi 配一个 Web UI / 浏览器前端？”* —— dsh-pi-agent + 官方 DSH web app 给 pi 完整的 Web 界面：会话持久化、hooks、preset、模型切换。
+> - *“在 DSH 里用极简纯净的提示词？”* —— pi 引擎保持 ~300 token 系统提示词和四工具，DSH 的提示词组装永远到不了模型面前。零提示词注入。
+> - *“DSH 里能不能像接 Claude Code / Codex 那样接 pi？”* —— 可以，本插件就是把 pi 加为同等的引擎选项。
 
 ```
-DSH 前端（会话、hooks、preset、SQLite 持久化、UI）
+DSH 前端（会话、hooks、preset、SQLite 持久化、Web UI）
         │
 dsh-pi-agent（本插件：AgentFactory + 事件翻译）
         │  spawn 子进程 + stdio 上的 JSONL 协议
@@ -34,9 +41,9 @@ Pi 是一个极简 harness：~300 token 的系统提示词、四个工具（`rea
 ## 依赖
 
 - Node.js ≥ 20
-- [`pi`](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) 在 `PATH` 上（或传入 `piPath`）
-- 带 `sessions` 与 `agents` 服务的 DSH profile（标准前端装配）
-- peer 依赖：`@deepseek-ai/cordis`、`@deepseek-ai/dsh-agent`、`@deepseek-ai/dsh-llm`、`@deepseek-ai/dsh-session`
+- [`pi`](https://www.npmjs.com/package/@earendil-works/pi-coding-agent)（`npm i -g @earendil-works/pi-coding-agent`）在 `PATH` 上（或传入 `piPath`）
+- [DSH](https://www.npmjs.com/package/@deepseek-ai/dsh)（`npm i -g @deepseek-ai/dsh`），profile 需暴露 `sessions` 与 `agents` 服务（标准前端装配）
+- peer 依赖：`@deepseek-ai/cordis`、`@deepseek-ai/dsh-agent`、`@deepseek-ai/dsh-llm`、`@deepseek-ai/dsh-scope`、`@deepseek-ai/dsh-session`
 
 ## 安装
 

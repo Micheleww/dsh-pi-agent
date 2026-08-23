@@ -1,7 +1,7 @@
 {
   "name": "dsh-pi-agent",
   "version": "0.1.1",
-  "description": "Run the Pi coding agent loop inside DeepSeek Harness (DSH): a DSH Agent implementation that drives a headless `pi --mode rpc` process, so DSH's frontend works unchanged.",
+  "description": "Use the Pi coding agent (@earendil-works/pi-coding-agent) as the agent loop inside DeepSeek Harness (@deepseek-ai/dsh): drive pi --mode rpc from the official DSH web UI, swap subagents to pi, zero prompt injection.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,11 +16,20 @@
     "dist"
   ],
   "keywords": [
-    "dsh",
     "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "dsh-agent",
+    "dsh-extensions",
     "pi",
     "pi-coding-agent",
-    "cordis"
+    "pi-extensions",
+    "earendil-works",
+    "agent-loop",
+    "coding-agent",
+    "harness",
+    "cordis",
+    "agent"
   ],
   "license": "MIT",
   "author": "Micheleww",

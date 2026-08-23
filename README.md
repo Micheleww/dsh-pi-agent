@@ -1,9 +1,16 @@
 # dsh-pi-agent
 
-Run the [Pi coding agent](https://github.com/earendil-works/pi) loop inside [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness): a DSH `Agent` plugin that drives a headless `pi --mode rpc` child process, so DSH's frontend — session log, hooks, presets, UI — works unchanged.
+Run the [Pi coding agent](https://github.com/earendil-works/pi) ([`@earendil-works/pi-coding-agent`](https://www.npmjs.com/package/@earendil-works/pi-coding-agent)) as the agent loop inside [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) ([`@deepseek-ai/dsh`](https://www.npmjs.com/package/@deepseek-ai/dsh)): a DSH `Agent` plugin that drives a headless `pi --mode rpc` child process, so DSH's frontend — session log, hooks, presets, web UI — works unchanged.
+
+> **Looking for one of these?**
+> - *"How do I use pi inside DeepSeek Harness / DSH?"* — you are in the right place.
+> - *"Swap the DSH agent-loop for the pi coding agent loop?"* — this plugin replaces the factory with a `pi --mode rpc` child process.
+> - *"Run pi with a web UI / browser frontend?"* — dsh-pi-agent + the official DSH web app gives pi the full web interface: session persistence, hooks, presets, model selection.
+> - *"Use a minimal clean prompt inside DSH?"* — the pi engine keeps its ~300-token system prompt and four tools; DSH's prompt assembly never reaches the model. Zero prompt injection.
+> - *"Claude Code / Codex subagents inside DSH?"* — DSH already supports those natively; this plugin adds pi as an engine option the same way.
 
 ```
-DSH frontend (sessions, hooks, presets, SQLite persistence, UI)
+DSH frontend (sessions, hooks, presets, SQLite persistence, web UI)
         │
 dsh-pi-agent  (this plugin: AgentFactory + event translation)
         │  spawn + JSONL over stdio
@@ -14,7 +21,7 @@ pi --mode rpc --no-session   (the Pi agent loop, untouched)
 
 ## Why
 
-Pi is a minimal harness: a ~300-token system prompt, four tools (`read`/`bash`/`edit`/`write`), and zero mid-session injections. DSH is a plugin-based platform: durable sessions, policies, approval chains, and a full prompt-assembly registry.
+Pi is a minimal harness: a ~300-token system prompt, four tools (`read`/`bash`/`edit`/`write`), and zero mid-session injections. DSH ([DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)) is a plugin-based platform: durable sessions, policies, approval chains, and a full prompt-assembly registry.
 
 This plugin gives you both at once: **DSH's engineering shell around Pi's clean engine.** When the plugin is active, the model sees exactly what it would see running `pi` directly in the same working directory — no extra prompt sections, no extra tools, no hidden reminders. DSH's own prompt assembly (`dsh-system-prompt`) and tool surface are bypassed entirely for sessions driven by this factory.
 
@@ -34,9 +41,9 @@ It also makes a clean A/B experiment: same frontend, same session format, switch
 ## Requirements
 
 - Node.js ≥ 20
-- [`pi`](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) on `PATH` (or pass `piPath`)
-- A DSH profile with `sessions` and `agents` services (the standard frontend assembly)
-- Peer deps: `@deepseek-ai/cordis`, `@deepseek-ai/dsh-agent`, `@deepseek-ai/dsh-llm`, `@deepseek-ai/dsh-session`
+- [`pi`](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) (`npm i -g @earendil-works/pi-coding-agent`) on `PATH` (or pass `piPath`)
+- [DSH](https://www.npmjs.com/package/@deepseek-ai/dsh) (`npm i -g @deepseek-ai/dsh`) with a profile exposing `sessions` and `agents` services (the standard frontend assembly)
+- Peer deps: `@deepseek-ai/cordis`, `@deepseek-ai/dsh-agent`, `@deepseek-ai/dsh-llm`, `@deepseek-ai/dsh-scope`, `@deepseek-ai/dsh-session`
 
 ## Install
 
@@ -45,6 +52,8 @@ npm install dsh-pi-agent
 ```
 
 The package is on the npm registry ([dsh-pi-agent](https://www.npmjs.com/package/dsh-pi-agent)). Mount it from any DSH profile (see [dsh-pi](https://github.com/Micheleww/dsh-pi) for a ready-made web profile).
+
+Related: the [pi ecosystem](https://github.com/earendil-works/pi) also has [pi-gui](https://github.com/minghinmatthewlam/pi-gui), [pi-hosts](https://github.com/hunvreus/pi-hosts), [pi-zentui](https://www.npmjs.com/package/pi-zentui); DSH natively bridges [Claude Code](https://www.npmjs.com/package/@deepseek-ai/dsh-subagent-claude-code) and [Codex](https://www.npmjs.com/package/@deepseek-ai/dsh-subagent-codex) as subagent engines — dsh-pi-agent adds **pi** as an engine and loop option the same way.
 
 ## Usage
 
