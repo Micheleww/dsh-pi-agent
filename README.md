@@ -41,9 +41,10 @@ It also makes a clean A/B experiment: same frontend, same session format, switch
 ## Install
 
 ```bash
-# inside your DSH checkout (or anywhere profile patches can load from)
-npm install /path/to/dsh-pi-agent
+npm install dsh-pi-agent
 ```
+
+The package is on the npm registry ([dsh-pi-agent](https://www.npmjs.com/package/dsh-pi-agent)). Mount it from any DSH profile (see [dsh-pi](https://github.com/Micheleww/dsh-pi) for a ready-made web profile).
 
 ## Usage
 

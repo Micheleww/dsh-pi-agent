@@ -42,7 +42,7 @@ Pi 是一个极简 harness：~300 token 的系统提示词、四个工具（`rea
 
 ```bash
 # 在你的 DSH 检出目录内（或 profile patch 可加载的任意位置）
-npm install /path/to/dsh-pi-agent
+npm install dsh-pi-agent
 ```
 
 ## 使用
