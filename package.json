@@ -23,6 +23,15 @@
     "cordis"
   ],
   "license": "MIT",
+  "author": "Micheleww",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Micheleww/dsh-pi-agent.git"
+  },
+  "homepage": "https://github.com/Micheleww/dsh-pi-agent#readme",
+  "bugs": {
+    "url": "https://github.com/Micheleww/dsh-pi-agent/issues"
+  },
   "peerDependencies": {
     "@deepseek-ai/cordis": ">=4.0.1",
     "@deepseek-ai/dsh-agent": ">=0.1.0",
